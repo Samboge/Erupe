@@ -1614,7 +1614,9 @@ func handleMsgMhfStampcardStamp(s *Session, p mhfpacket.MHFPacket) {
 	pkt := p.(*mhfpacket.MsgMhfStampcardStamp)
 	bf := byteframe.NewByteFrame()
 	bf.WriteUint16(pkt.HR)
-	bf.WriteUint16(pkt.GR)
+	if _config.ErupeConfig.RealClientMode > _config.F5 {
+		bf.WriteUint16(pkt.GR)
+	}
 	var stamps uint16
 	_ = s.server.db.QueryRow(`SELECT stampcard FROM characters WHERE id = $1`, s.charID).Scan(&stamps)
 	bf.WriteUint16(stamps)
@@ -1626,13 +1628,13 @@ func handleMsgMhfStampcardStamp(s *Session, p mhfpacket.MHFPacket) {
 		bf.WriteUint16(pkt.Reward2)
 		bf.WriteUint16(pkt.Item2)
 		bf.WriteUint16(pkt.Quantity2)
-		addWarehouseGift(s, "item", mhfpacket.WarehouseStack{ItemID: pkt.Item2, Quantity: pkt.Quantity2})
+		addWarehouseGift(s, "item", mhfpacket.WarehouseStack{ItemID: 6175, Quantity: 1})
 	} else if stamps%15 == 0 {
 		bf.WriteUint16(1)
 		bf.WriteUint16(pkt.Reward1)
 		bf.WriteUint16(pkt.Item1)
 		bf.WriteUint16(pkt.Quantity1)
-		addWarehouseGift(s, "item", mhfpacket.WarehouseStack{ItemID: pkt.Item1, Quantity: pkt.Quantity1})
+		addWarehouseGift(s, "item", mhfpacket.WarehouseStack{ItemID: 5392, Quantity: 1})
 	} else {
 		bf.WriteBytes(make([]byte, 8))
 	}
