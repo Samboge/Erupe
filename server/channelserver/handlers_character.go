@@ -216,7 +216,7 @@ func (save *CharacterSaveData) updateStructWithSaveData() {
 			save.WeaponID = binary.LittleEndian.Uint16(save.decompSave[save.Pointers[pWeaponID] : save.Pointers[pWeaponID]+2])
 			save.HRP = binary.LittleEndian.Uint16(save.decompSave[save.Pointers[pHRP] : save.Pointers[pHRP]+2])
 			if save.HRP == uint16(999) {
-				save.GR = grpToGR(binary.LittleEndian.Uint32(save.decompSave[save.Pointers[pGRP] : save.Pointers[pGRP]+4]))
+				save.GR = grpToGR(int(binary.LittleEndian.Uint32(save.decompSave[save.Pointers[pGRP] : save.Pointers[pGRP]+4])))
 			}
 			save.KQF = save.decompSave[save.Pointers[pKQF] : save.Pointers[pKQF]+8]
 		} else if _config.ErupeConfig.RealClientMode < _config.G10 {

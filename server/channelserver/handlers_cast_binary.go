@@ -6,6 +6,7 @@ import (
 	"erupe-ce/common/mhfcourse"
 	"erupe-ce/common/token"
 	"erupe-ce/config"
+	"erupe-ce/network"
 	"erupe-ce/network/binpacket"
 	"erupe-ce/network/mhfpacket"
 	"fmt"
@@ -125,7 +126,7 @@ func parseChatCommand(s *Session, command string) {
 				deleteNotif.WriteUint16(uint16(temp.Opcode()))
 				temp.Build(deleteNotif, s.clientContext)
 			}
-			deleteNotif.WriteUint16(0x0010)
+			deleteNotif.WriteUint16(uint16(network.MSG_SYS_END))
 			s.QueueSend(deleteNotif.Data())
 			time.Sleep(500 * time.Millisecond)
 			reloadNotif := byteframe.NewByteFrame()
@@ -160,7 +161,7 @@ func parseChatCommand(s *Session, command string) {
 				reloadNotif.WriteUint16(uint16(temp.Opcode()))
 				temp.Build(reloadNotif, s.clientContext)
 			}
-			reloadNotif.WriteUint16(0x0010)
+			reloadNotif.WriteUint16(uint16(network.MSG_SYS_END))
 			s.QueueSend(reloadNotif.Data())
 		} else {
 			sendDisabledCommandMessage(s, commands["Reload"])
@@ -297,8 +298,8 @@ func parseChatCommand(s *Session, command string) {
 	case commands["Teleport"].Prefix:
 		if commands["Teleport"].Enabled {
 			if len(args) > 2 {
-				x, _ := strconv.Atoi(args[1])
-				y, _ := strconv.Atoi(args[2])
+				x, _ := strconv.ParseInt(args[1], 10, 16)
+				y, _ := strconv.ParseInt(args[2], 10, 16)
 				payload := byteframe.NewByteFrame()
 				payload.SetLE()
 				payload.WriteUint8(2)        // SetState type(position == 2)
