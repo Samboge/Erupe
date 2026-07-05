@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `makeEventQuest` unconditionally cleared the Interception bit (Quest Variant 3, bit 6) on every quest sent to the client, blocking all Diva Defense interception quests even though the server has real support for them (`handlers_tactics.go`). The flag is now only cleared for quests outside the known interception quest-file range (58079-58083).
+
 ### Added
 
 - Parse and write zenny, gzenny and caravan points (CP) in the ZZ character save blob (offsets 0xB0, 0x1FF64, 0x212E4 — sourced from Chakratos/mhf-save-manager, validated against a live HR999 save). Exposed as `CharacterSaveData.Zenny/GZenny/CP` alongside the existing `current_equip` pointer. Write path is byte-idempotent (verified against a live blob). Pre-ZZ modes remain unmapped to avoid corrupting unverified layouts.

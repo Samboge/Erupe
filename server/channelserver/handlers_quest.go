@@ -406,7 +406,12 @@ func makeEventQuest(s *Session, eq EventQuest) ([]byte, error) {
 
 	_, _ = bf.Seek(questFrameVariant3Offset, 0)
 	questVariant3 := bf.ReadUint8()
-	questVariant3 &= 0b11011111 // disable Interception flag
+	if eq.QuestID < udTacticsQuestMin || eq.QuestID > udTacticsQuestMax {
+		// Only the Diva Defense quest files (see handlers_tactics.go) have real
+		// server-side support for the interception mechanics; clear the flag
+		// everywhere else so the client doesn't expect them on a normal quest.
+		questVariant3 &= 0b11011111
+	}
 	_, _ = bf.Seek(questFrameVariant3Offset, 0)
 	bf.WriteUint8(questVariant3)
 
