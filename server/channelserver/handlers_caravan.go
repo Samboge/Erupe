@@ -12,8 +12,7 @@ import (
 // RyoudamaCharInfo represents one entry of the personal caravan ranking.
 // Unk0 is populated with the character's caravan points -- this mirrors the
 // pre-existing struct shape (CID/Unk0/Name) rather than a byte-confirmed
-// field semantic; see project_caravan_packets.md for what's actually
-// confirmed vs. inferred.
+// field semantic.
 type RyoudamaCharInfo struct {
 	CID  uint32
 	Unk0 int32
@@ -21,7 +20,7 @@ type RyoudamaCharInfo struct {
 }
 
 // RyoudamaBoostInfo represents caravan boost status. No data source or wire
-// layout is known for this yet (see project_caravan_packets.md) -- always empty.
+// layout is known for this yet -- always empty.
 type RyoudamaBoostInfo struct {
 	Start time.Time
 	End   time.Time
@@ -35,8 +34,8 @@ func handleMsgMhfGetRyoudama(s *Session, p mhfpacket.MHFPacket) {
 		// Note: CharacterSaveData.CP (model_character.go) is a separate,
 		// already-shipped "caravan points" value read/written directly from
 		// the ZZ save blob -- it is NOT synced with caravanRepo's points
-		// here. See project_caravan_packets.md ("Important cross-reference")
-		// for why these two weren't unified in this pass.
+		// here. They likely represent the same real-world value but were
+		// deliberately left unreconciled in this pass.
 		points, err := s.server.caravanRepo.GetPoints(s.charID)
 		if err != nil {
 			s.logger.Error("Failed to get caravan points", zap.Error(err))
@@ -64,11 +63,11 @@ func handleMsgMhfGetRyoudama(s *Session, p mhfpacket.MHFPacket) {
 
 func handleMsgMhfPostRyoudama(s *Session, p mhfpacket.MHFPacket) {
 	pkt := p.(*mhfpacket.MsgMhfPostRyoudama)
-	// Request payload beyond AckHandle is unconfirmed (see
-	// project_caravan_packets.md), so this doesn't trust client-submitted
-	// values -- points are credited server-side from the quest-clear path
-	// instead. Previously this handler sent no ACK at all, which is a
-	// likely softlock source for any client awaiting this response.
+	// Request payload beyond AckHandle is unconfirmed, so this doesn't
+	// trust client-submitted values -- points are credited server-side from
+	// the quest-clear path instead. Previously this handler sent no ACK at
+	// all, which is a likely softlock source for any client awaiting this
+	// response.
 	doAckSimpleSucceed(s, pkt.AckHandle, make([]byte, 4))
 }
 
@@ -90,8 +89,7 @@ func handleMsgMhfPostTinyBin(s *Session, p mhfpacket.MHFPacket) {
 // commented-out code from the since-superseded feature/conquest branch) was
 // never confirmed against the real client. Sending an unconfirmed non-empty
 // payload risks a worse outcome (client misparse/crash) than the current
-// known-safe empty response. See project_caravan_packets.md for what would
-// need to be confirmed before filling these in.
+// known-safe empty response.
 
 func handleMsgMhfCaravanMyScore(s *Session, p mhfpacket.MHFPacket) {
 	pkt := p.(*mhfpacket.MsgMhfCaravanMyScore)
