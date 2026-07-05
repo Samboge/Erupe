@@ -24,7 +24,6 @@ func TestParseSmallNotImplemented(t *testing.T) {
 		{"MsgMhfGetRestrictionEvent", &MsgMhfGetRestrictionEvent{}},
 		{"MsgMhfKickExportForce", &MsgMhfKickExportForce{}},
 		{"MsgMhfPaymentAchievement", &MsgMhfPaymentAchievement{}},
-		{"MsgMhfPostRyoudama", &MsgMhfPostRyoudama{}},
 		{"MsgMhfRegistSpabiTime", &MsgMhfRegistSpabiTime{}},
 		{"MsgMhfResetAchievement", &MsgMhfResetAchievement{}},
 		{"MsgMhfResetTitle", &MsgMhfResetTitle{}},
