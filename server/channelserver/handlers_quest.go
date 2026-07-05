@@ -719,7 +719,7 @@ func handleMsgMhfEnumerateQuest(s *Session, p mhfpacket.MHFPacket) {
 	}
 
 	bf.WriteUint16(totalCount)
-	bf.WriteUint16(pkt.Offset)
+	bf.WriteUint16(pkt.Offset + returnedCount)
 	_, _ = bf.Seek(0, io.SeekStart)
 	bf.WriteUint16(returnedCount)
 
