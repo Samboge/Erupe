@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `0002_catch_up_patches.sql` had two `→` (U+2192) characters in comments, which aren't representable in the WIN1252 codepage and made the embedded migration fail outright (`invalid byte sequence for encoding "WIN1252"`) on any Postgres cluster not initialized as UTF-8. Replaced both with plain ASCII `->` ([#198](https://github.com/Mezeporta/Erupe/issues/198)).
 - `handleMsgMhfEnumerateQuest` wrote back `pkt.Offset` unchanged as the next-page offset instead of `pkt.Offset + returnedCount`. Once `event_quests` needed a second page (574 rows, page boundary at offset 512), the ZZ client kept re-requesting the same offset forever, hanging on a black screen at login ([#194](https://github.com/Mezeporta/Erupe/issues/194)).
 - Loading your own house crashed the ZZ client when `house_furniture` was still `NULL` (any never-decorated character): `handleMsgMhfLoadHouse` filled in a 20-zero-byte placeholder the client can't parse. `Destination=9` now returns a failed ACK instead of that placeholder ([#192](https://github.com/Mezeporta/Erupe/issues/192)).
+- Entering the forge softlocked the client when a `ShopType=10` (item shop) tab had too many rows: the client's tab renderer crashes well below the 512-row `Limit` it advertises (~420 rows reproduced it). `handleMsgMhfEnumerateShop` now caps `ShopType=10` rows to a conservative, unbisected 256 regardless of the requested limit; other shop types are unaffected ([#190](https://github.com/Mezeporta/Erupe/issues/190)).
 
 ### Added
 
