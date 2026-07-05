@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `makeEventQuest` unconditionally cleared the Interception bit (Quest Variant 3, bit 6) on every quest sent to the client, blocking all Diva Defense interception quests even though the server has real support for them (`handlers_tactics.go`). The flag is now only cleared for quests outside the known interception quest-file range (58079-58083).
+- Road shop (Hunter's Road) item 9958 was seeded with `cost=20, quantity=1` and a stray value in the unrelated `road_fatalis` column instead of the intended bulk pricing of 999 for 1 Road Point. Fixed in the seed data and via migration `0024_fix_road_shop_item_9958`, which also corrects the value already present on deployed databases.
 
 ### Added
 
