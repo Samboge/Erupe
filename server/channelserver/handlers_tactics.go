@@ -47,10 +47,15 @@ func handleMsgMhfGetUdTacticsPoint(s *Session, p mhfpacket.MHFPacket) {
 	doAckBufSucceed(s, pkt.AckHandle, bf.Data())
 }
 
-// udTacticsQuestFileIDs is the allowed range of interception quest file IDs.
+// udTacticsQuestMin/Max bound the interception (Diva Defense) quest file IDs.
+// Every ripped 58xxx quest_id in EventQuests.sql (quest_type 46/47/48, see
+// isDivaDefenseQuestType in constants_quest.go) falls in 58043-58128; the
+// previous 58079-58083 bound only covered one event batch out of 65 rows.
+// This range isn't gap-free (a handful of unused IDs in between are also
+// accepted), but that's harmless since no real quest ever sends them here.
 const (
-	udTacticsQuestMin = 58079
-	udTacticsQuestMax = 58083
+	udTacticsQuestMin = 58043
+	udTacticsQuestMax = 58128
 )
 
 func handleMsgMhfAddUdTacticsPoint(s *Session, p mhfpacket.MHFPacket) {
