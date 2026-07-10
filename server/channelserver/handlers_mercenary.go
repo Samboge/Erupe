@@ -1,17 +1,18 @@
 package channelserver
 
 import (
+	"database/sql"
+	"errors"
 	"erupe-ce/common/byteframe"
 	"erupe-ce/common/stringsupport"
 	cfg "erupe-ce/config"
 	"erupe-ce/network/mhfpacket"
 	"erupe-ce/server/channelserver/compression/deltacomp"
 	"erupe-ce/server/channelserver/compression/nullcomp"
-	"go.uber.org/zap"
 	"io"
 	"time"
-	"database/sql" // ADD THIS
-	"errors"       // ADD THIS
+
+	"go.uber.org/zap"
 )
 
 func handleMsgMhfLoadPartner(s *Session, p mhfpacket.MHFPacket) {
@@ -270,7 +271,6 @@ func handleMsgMhfSaveMercenary(s *Session, p mhfpacket.MHFPacket) {
 		doAckSimpleSucceed(s, pkt.AckHandle, make([]byte, 4))
 		return
 	}
-
 	dumpSaveData(s, pkt.MercData, "mercenary")
 
 	if len(pkt.MercData) == 0x8B {
@@ -283,6 +283,30 @@ func handleMsgMhfSaveMercenary(s *Session, p mhfpacket.MHFPacket) {
 		}
 	} else {
 		s.logger.Warn("Mercenary payload too small", zap.Int("len", len(pkt.MercData)))
+	}
+
+	var gcp int
+	gcp, gcpErr := readCharacterInt(s, "gcp")
+	if gcpErr != nil {
+		s.logger.Warn("Failed to read gcp", zap.Error(gcpErr))
+	} else if pkt.GCP > uint32(gcp) {
+		difference := pkt.GCP - uint32(gcp)
+		// s.logger.Info("GCP increased",
+		// 	zap.Uint32("old_gcp", uint32(gcp)),
+		// 	zap.Uint32("new_gcp", pkt.GCP),
+		// 	zap.Uint32("difference", difference),
+		// )
+
+		if pkt.PactMercID > 0 {
+			ownerCharID, _, _, ownerErr := s.server.charRepo.FindByRastaID(int(pkt.PactMercID), s.charID)
+			if ownerErr != nil {
+				s.logger.Warn("Failed to find pact owner for GCP credit",
+					zap.Error(ownerErr), zap.Uint32("pactMercID", pkt.PactMercID))
+			} else if _, err := s.server.charRepo.AdjustInt(ownerCharID, "gcp", int(difference)); err != nil {
+				s.logger.Warn("Failed to credit GCP to pact owner",
+					zap.Error(err), zap.Uint32("ownerCharID", ownerCharID))
+			}
+		}
 	}
 
 	if err := s.server.charRepo.UpdateGCPAndPact(s.charID, pkt.GCP, pkt.PactMercID); err != nil {
@@ -379,7 +403,7 @@ func handleMsgMhfReadMercenaryW(s *Session, p mhfpacket.MHFPacket) {
 	doAckBufSucceed(s, pkt.AckHandle, bf.Data())
 }
 
-//This function load contracted mercenary data (triggered by mercenaryW if theres some contract)
+// This function load contracted mercenary data (triggered by mercenaryW if theres some contract)
 func handleMsgMhfReadMercenaryM(s *Session, p mhfpacket.MHFPacket) {
 	pkt := p.(*mhfpacket.MsgMhfReadMercenaryM)
 	data, err := s.server.charRepo.LoadColumn(pkt.CharID, "savemercenary")
